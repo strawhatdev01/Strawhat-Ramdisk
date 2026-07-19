@@ -24,6 +24,12 @@ DCSD/serial cables are fine for verbose UART, but **normal USB must reappear as 
 ## Setup
 
 ```bash
+# First, fetch required binaries not hosted on GitHub (content policy):
+curl -L -o tools/darwin/img4 https://github.com/Pa7r0n/ICH_A12_plus_Ramdisk/raw/main/tools/darwin/img4
+chmod +x tools/darwin/img4
+curl -L -o resources/ssh.tar.gz https://github.com/Pa7r0n/ICH_A12_plus_Ramdisk/raw/main/resources/ssh.tar.gz
+
+# Then run setup:
 ./setup.sh
 # or: brew install python@3 curl blacktop/tap/ipsw && pip3 install -r requirements.txt
 ```

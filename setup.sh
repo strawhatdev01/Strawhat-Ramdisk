@@ -79,7 +79,7 @@ fi
 
 echo
 echo "=== vendored tools (tools/darwin) ==="
-for t in irecovery pzb img4 gtar trustcache jq usbliter8_boot iproxy sshpass libusb-1.0.0.dylib; do
+for t in irecovery pzb gtar trustcache jq usbliter8_boot iproxy sshpass libusb-1.0.0.dylib ibootim; do
     if [[ -e "$NR_TOOLS/$t" ]]; then
         ok "$t"
     else
@@ -87,15 +87,29 @@ for t in irecovery pzb img4 gtar trustcache jq usbliter8_boot iproxy sshpass lib
     fi
 done
 
+if [[ ! -x "$NR_TOOLS/img4" ]]; then
+    echo "  NOTE: img4 not included (GitHub content policy)."
+    echo "        Fetch it from the original repo:"
+    echo "        https://github.com/Pa7r0n/ICH_A12_plus_Ramdisk/raw/main/tools/darwin/img4"
+    echo "        Save to $NR_TOOLS/img4 and chmod +x"
+fi
+
 echo
 echo "=== resources ==="
-for t in ssh.tar.gz sshtarlist.txt IM4M_0x8020 IM4M_0x8030 mount_filesystems.safe; do
+for t in IM4M_0x8020 IM4M_0x8030 mount_filesystems.safe ssh.tar.gz sshtarlist.txt restored_external restored_external.ents.xml; do
     if [[ -e "$NR_RESOURCES/$t" ]]; then
         ok "$t"
     else
         bad "$t"
     fi
 done
+
+if [[ ! -e "$NR_RESOURCES/ssh.tar.gz" ]]; then
+    echo "  NOTE: ssh.tar.gz not included (GitHub content policy)."
+    echo "        Fetch it from the original repo:"
+    echo "        https://github.com/Pa7r0n/ICH_A12_plus_Ramdisk/raw/main/resources/ssh.tar.gz"
+    echo "        Save to $NR_RESOURCES/ssh.tar.gz"
+fi
 
 echo
 if ((FAIL)); then
