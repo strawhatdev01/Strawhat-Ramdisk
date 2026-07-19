@@ -1,0 +1,117 @@
+# Strawhat Ramdisk `v1.0`
+
+SSH ramdisk for **A12 / A13** after pwned DFU with [usbliter8](https://github.com/prdgmshift/usbliter8).
+
+Forked & rebranded from [Pa7r0n/ICH_A12_plus_Ramdisk](https://github.com/Pa7r0n/ICH_A12_plus_Ramdisk) by **[@strawhatdev01](https://github.com/strawhatdev01)**.
+
+Not a jailbreak. Research use on devices you own.
+
+If this helps you, please star the repo — thanks.
+
+## Enter pwned DFU
+
+1. DFU mode + **RP2350** + [usbliter8](https://github.com/prdgmshift/usbliter8)
+2. Cable to Mac (prefer **USB-A → Lightning**; USB-C adapters are flaky)
+3. Confirm:
+
+```bash
+./tools/darwin/irecovery -q
+# MODE: DFU   PWND: usbliter8
+```
+
+DCSD/serial cables are fine for verbose UART, but **normal USB must reappear as Recovery** after iBoot. `./boot.sh` waits for that USB Recovery mode (and will prompt to unplug/replug if needed).
+
+## Setup
+
+```bash
+./setup.sh
+# or: brew install python@3 curl blacktop/tap/ipsw && pip3 install -r requirements.txt
+```
+
+## Quick start
+
+```bash
+./status.sh
+./build.sh                 # --with-fw is default (needed for normal USB)
+./boot.sh
+./ssh.sh
+# password: alpine
+```
+
+Works for **A12 / A13** and any signed iOS version listed by `./build.sh --list` (ipsw.me).
+
+`./ssh.sh` mounts System/Preboot/xART and prints the device iOS version from Preboot when available.
+
+Useful flags:
+
+```bash
+./build.sh --list
+./build.sh --version 18.7.9
+./build.sh --no-fw          # skip USB firmwares (not recommended)
+./build.sh --kernel stock
+./boot.sh --no-logo
+./boot.sh --no-fw
+```
+
+If `./boot.sh` stops after "Boot triggered" / iBoot send: unplug and replug once when prompted, use a USB-A cable, and rebuild without `--no-fw`.
+
+## Boot
+
+```
+usbliter8 (RP2350) → PWND DFU
+  → patched iBEC
+  → Strawhat Dev logo (centered for this device) + verbose boot-args
+  → [SPTM/TXM if in IPSW] → firmwares → DT → trustcache → ramdisk → kernel/bootx
+  → SSH  root@localhost:2222  alpine
+```
+
+Logo and verbose are handled in `./boot.sh` (panel size from board, `setenvnp` before `bootx`).
+
+## Patches
+
+| Layer | When |
+|-------|------|
+| iBoot | always (`rd=md0`, IMG4 path) |
+| SPTM / TXM | only if BuildManifest has them |
+| Kernel | patched by default (AMFI; more on iOS 27) — `--kernel stock` fallback |
+| Ramdisk / trustcache | stock RestoreRamDisk + SSH inject |
+
+## Mounts
+
+```sh
+mount_filesystems                 # /mnt1 System, /mnt6 Preboot, /mnt7 xART
+mount_filesystems --live-data     # /mnt2 Data
+```
+
+| iOS | System / Preboot / xART | `/mnt2` Data |
+|-----|-------------------------|--------------|
+| ≤ 15 | OK | OK in practice |
+| 16 | expected OK | not verified |
+| 17+ | OK (safe helper, no `seputil --load`) | **still not working** |
+
+Everything practical was tried for **`/mnt2` on iOS 17+**; Data stays SEP-gated and is **not solved** here. Contributions welcome if you find a reliable path.
+
+## Devices
+
+| CPID | Chip | Examples |
+|------|------|----------|
+| 0x8020 | A12 | XR, XS, iPad Air 3... |
+| 0x8030 | A13 | iPhone 11, SE 2... |
+| 0x8027 | A12X | iPad Pro 2018 (`--im4m`) |
+
+## Credits
+
+This is a fork of **[Pa7r0n/ICH_A12_plus_Ramdisk](https://github.com/Pa7r0n/ICH_A12_plus_Ramdisk)** — all core exploit logic and patchfinders are their work. Huge thanks to:
+
+- **[Pa7r0n](https://github.com/Pa7r0n)** — original ICH_A12+ Ramdisk creator
+- **[Official_I_C_H](https://t.me/Official_I_C_H)** — original project author
+- [usbliter8](https://github.com/prdgmshift/usbliter8) — Paradigm Shift
+- [usbliter8ra1n](https://github.com/Leeksov/usbliter8ra1n) — Leeksov
+- Patchfinders: [iboot](https://github.com/Leeksov/usbliter8-iboot-patchfinder) · [kernel](https://github.com/Leeksov/usbliter8-kernel-patchfinder) · [sptm](https://github.com/Leeksov/usbliter8-sptm-patchfinder) · [txm](https://github.com/Leeksov/usbliter8-txm-patchfinder)
+- [palera1n](https://github.com/palera1n) / SSHRD ecosystem
+
+See [NOTICE](NOTICE).
+
+## License
+
+MIT. Upstream licenses apply. **For research on devices you own.**
